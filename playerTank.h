@@ -65,7 +65,7 @@ public:
 		bullets.erase(std::remove_if(bullets.begin(), bullets.end(), [](Bullet& b) {return !b.active;}), bullets.end()); //delete !active-bullet
 	}
 	void render(SDL_Renderer* renderer) {
-		playertexture = loadTexture("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/manBlue_machine.png", renderer);
+		playertexture = loadTexture("spritesheet/manBlue_machine.png", renderer);
 		renderCharacter(renderer, playertexture, &tank_rect, dirX, dirY);
 		for (auto& bullet : bullets) {
 			bullet.render(renderer);

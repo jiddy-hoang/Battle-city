@@ -77,7 +77,7 @@ public:
 		string path;
 		if (tx.size() < b + 1) tx.resize(b + 1);
 		for (int i = a; i <= b; i++) {
-			path = "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/tile_";
+			path = "spritesheet/tile_";
 			string num = INT_TO_STRING(i);
 			path += num + ".PNG";
 			walltexture = loadTexture(path.c_str(), renderer);
@@ -91,38 +91,150 @@ public:
 			std::cerr << "Error: a exceeded b in generatewall" << std::endl;
 			return;
 		}
-		for (int i = 13; i <= 18; i++) {
+		int start = a;
+		for (int i = 13; i <= 16; i++) {
 			for (int j = 18; j <= 20; j++) {
-				if (a > b) break;
+				if (start > b) break;
 				Wall wall(j * TITLE_SIZE, i * TITLE_SIZE);
-				if (a >= tx.size() || !tx[a]) {
+				if (start >= tx.size() || !tx[start]) {
 					std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
 					continue;
 				}
-				wall.SetTexture(tx[a]);
-				walls.push_back({ wall, tx[a] });
+				wall.SetTexture(tx[start]);
+				walls.push_back({ wall, tx[start] });
 				allWall.push_back(wall);
-				a++;
+				start++;
 			}
 		}
-		for (int j = 7;j <= 9;j++) {
-			if (a > b) break;
-			Wall wall(j * TITLE_SIZE, 15 * TITLE_SIZE);
-			if (a >= tx.size() || !tx[a]) {
+		for (int j = 8; j <= 10; j++) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 16 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
 				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
 				continue;
 			}
-			wall.SetTexture(tx[a]);
-			walls.push_back({ wall, tx[a] });
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
 			allWall.push_back(wall);
-			a++;
+			start++;
+		}
+		for (int i = 14;i <= 15;i++) {
+			if (start > b) break;
+			Wall wall(6 * TITLE_SIZE, i * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		for (int i = 6;i <= 7;i++) {
+			if (start > b) break;
+			Wall wall(14 * TITLE_SIZE, i * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int i = 7;i <= 8;i++) {
+			if (start > b) break;
+			Wall wall(21 * TITLE_SIZE, i * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int i = 14;i <= 15;i++) {
+			if (start > b) break;
+			Wall wall(14 * TITLE_SIZE, i * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int j = 17;j <= 18;j++) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 11 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int j = 8;j <= 10;j++) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 11 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
+		}
+		Wall egg(9* TITLE_SIZE, 12 * TITLE_SIZE);
+		egg.SetTexture(tx[start]);
+		walls.push_back({ egg, tx[start] });
+		allWall.push_back(egg);
+		start++;
+		for (int j = 9;j <= 11;j++) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 14 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
+		}
+		for (int j = 9;j <= 10;j++) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 14 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
+		}
+		for (int j = 9;j <= 11;j += 2) {
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 13 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
 		}
 	}
 	void generatewood(int num_pos) {
 		for (int i = 0;i < 19; i++) {	//for Oy
 			for (int j = 0;j < 34; j++) {	//for Ox
 				string num = INT_TO_STRING(num_pos);
-				string path = "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/tile_" + num + ".PNG";
+				string path = "spritesheet/tile_" + num + ".PNG";
 				woodtexture = loadTexture(path.c_str(), renderer);
 				if (tileMap[i][j] == num_pos) {
 					Wall newwood(j * TITLE_SIZE, i * TITLE_SIZE);
@@ -131,13 +243,20 @@ public:
 				}
 			}
 		}
-		woodtexture = loadTexture("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/tile_26.png", renderer);
+		woodtexture = loadTexture("spritesheet/tile_26.png", renderer);
 		Wall newwood2(14 * TITLE_SIZE, 6 * TITLE_SIZE);
 		newwood2.SetTexture(woodtexture);
 		woods.push_back({ newwood2, woodtexture });
 		Wall newwood3(14 * TITLE_SIZE, 7 * TITLE_SIZE);
 		newwood3.SetTexture(woodtexture);
 		woods.push_back({ newwood3, woodtexture });
+		woodtexture = loadTexture("spritesheet/tile_27.png", renderer);
+		Wall newwood4(6 * TITLE_SIZE, 14 * TITLE_SIZE);
+		newwood4.SetTexture(woodtexture);
+		woods.push_back({ newwood4, woodtexture });
+		Wall newwood5(6 * TITLE_SIZE, 15 * TITLE_SIZE);
+		newwood5.SetTexture(woodtexture);
+		woods.push_back({ newwood5, woodtexture });
 	}
 	void generategrass() {
 		for (int i = 0;i < SCREEN_WIDTH - 4*TITLE_SIZE;i += TITLE_SIZE) {
@@ -152,7 +271,7 @@ public:
 		for (int i = 0;i < 19; i++) {	//for Oy
 			for (int j = 0;j < 34; j++) {	//for Ox
 				string num = INT_TO_STRING(num_pos);
-				string path = "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/tile_"+ num +".PNG";
+				string path = "spritesheet/tile_"+ num +".PNG";
 				walltexture = loadTexture(path.c_str(), renderer);
 				if (tileMap[i][j] == num_pos) {
 					Wall newWall(j * TITLE_SIZE, i * TITLE_SIZE);
@@ -200,7 +319,7 @@ public:
 			cerr << "Renderer could not be created! SDL_Error " << SDL_GetError() << endl;
 			running = false;
 		}
-		grasstexture = loadTexture("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/spritesheet/tile_01.png", renderer);
+		grasstexture = loadTexture("spritesheet/tile_01.png", renderer);
 		if (!grasstexture) {
 			cerr << "Failed to load grass texture Error: " << endl;
 			running = false;
@@ -215,7 +334,7 @@ public:
 			initwalls(i);
 		}
 		generategrass();
-		generatewall(100, 114);
+		generatewall(100, 130);
 		spawnEnemies();
 	}
 	void render() {
