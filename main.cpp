@@ -3,6 +3,9 @@
 #include <SDL.h>
 #include <vector>
 #include <SDL_image.h>
+#include <string>
+#include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 using namespace std;
 
@@ -18,35 +21,46 @@ const int HPlayer = 20;
 #include "playerTank.h"
 #include "bullet.h"
 #include "EnemyTank.h"
-
+#include "AudioManager.h"
 SDL_Texture* loadTexture(const char*, SDL_Renderer*);
 
 int tileMap[19][34] = {
-	{5, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 6, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0,24,22,25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0, 0,23,24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{0, 0, 0, 0,57,55,58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,10,11,21, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0,61,49, 0, 0, 0, 0, 0, 0, 0, 0,47,39,39,39,39,39,39,38, 0,12,13,14, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0,61,49, 0, 0, 0, 0, 0, 0, 0, 0, 0,26,26,26,26,26,26,42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0,59,61,49, 0, 0, 0, 0, 0, 0, 0, 0, 0,26,26,26,26,26,26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0,51,54,50, 0, 0, 0, 0, 0, 0, 0, 0,41,26,26,26,26,26,26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,40,26,26,26,26,26,26,41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0,37,39,39,39,38, 0, 0,40,26,26,26,26,26,26,40, 0, 0, 0, 0,60,54,53, 0, 0, 0, 0, 0},
-	{0,15,16, 0, 0, 0,37,35,45,45,45,36,39,39,46,39,48,26,26,47,39,43, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},
-	{0,17,18, 0, 0, 0,40,27,27,27,27,27,27,27,40,26,26,26,26,26,26,40, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0,42,27,27,27,27,27,27,27,42,26,26,26,26,26,26,40, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0,27,27,27,27,27,27,27,26,26,26,26,26,26,26,40, 0, 0, 0, 0,56,54,50, 0, 0, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0,27,27,27,27,27,27,27,26,26,26,26,26,26,26,40, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0,41,27,27,27,27,27,27,27,41,26,26,26,26,26,26,40, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0,36,39,39,39,39,39,39,39,44,39,39,39,39,39,39,35, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},
-	{7, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 8, 0, 0, 0}
+//	 0	1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33
+	{5, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 6, 0, 0, 0},	//0
+	{2, 0, 0, 0, 0, 0, 0,24,22,25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//1
+	{2, 0, 0, 0, 0, 0, 0, 0,23,24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//2
+	{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//3
+	{0, 0, 0, 0,57,55,58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,10,11,21, 0, 0, 0, 0, 0, 0, 0, 0},	//4
+	{0, 0, 0, 0,61,49, 0, 0, 0, 0, 0, 0, 0, 0,47,39,39,39,39,39,39,38, 0,12,13,14, 0, 0, 0, 0, 0, 0, 0, 0},	//5
+	{0, 0, 0, 0,61,49, 0, 0, 0, 0, 0, 0, 0, 0, 0,26,26,26,26,26,26,42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//6
+	{0, 0, 0,59,61,49, 0, 0, 0, 0, 0, 0, 0, 0, 0,26,26,26,26,26,26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//7
+	{0, 0, 0,51,54,50, 0, 0, 0, 0, 0, 0, 0, 0,41,26,26,26,26,26,26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//8
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,40,26,26,26,26,26,26,41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//9
+	{0, 0, 0, 0, 0, 0, 0,37,39,39,39,38, 0, 0,40,26,26,26,26,26,26,40, 0, 0, 0, 0,60,54,53, 0, 0, 0, 0, 0},	//10
+	{0,15,16, 0, 0, 0,37,35,45,45,45,36,39,39,46,39,48,26,26,47,39,43, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},	//11
+	{0,17,18, 0, 0, 0,40,27,27,27,27,27,27,27,40,26,26,26,26,26,26,40, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},	//12
+	{0, 0, 0, 0, 0, 0,42,27,27,27,27,27,27,27,42,26,26,26,26,26,26,40, 0, 0, 0, 0,49,61,49, 0, 0, 0, 0, 0},	//13
+	{0, 0, 0, 0, 0, 0, 0,27,27,27,27,27,27,27,26,26,26,26,26,26,26,40, 0, 0, 0, 0,56,54,50, 0, 0, 0, 0, 0},	//14
+	{2, 0, 0, 0, 0, 0, 0,27,27,27,27,27,27,27,26,26,26,26,26,26,26,40, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//15	
+	{2, 0, 0, 0, 0, 0,41,27,27,27,27,27,27,27,41,26,26,26,26,26,26,40, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//16
+	{2, 0, 0, 0, 0, 0,36,39,39,39,39,39,39,39,44,39,39,39,39,39,39,35, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0},	//17
+	{7, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 8, 0, 0, 0}	//18
 };
 
 class Game {
 private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+	TTF_Font* font; // Font render text
+	SDL_Color textColor = { 0, 0, 139, 255 }; // Dark BLUE
+	int lives; // when player die -))
+	Uint32 gameStartTime; // time game start
+	Uint32 lastBulletTime = 0; 
+	const int TIME_LIMIT = 180; 
+	const int Max_bullet = 6;
+	int Pbullet = Max_bullet;
+	string UIbullet;
+	bool gameWon; 
 public:
 	bool running;
 	vector<pair<Wall,SDL_Texture*>> walls;
@@ -56,11 +70,33 @@ public:
 	vector<Wall> grass;
 	vector<Wall> allWall;	//for all wall
 	playerTank player = playerTank(TITLE_SIZE, TITLE_SIZE);
-	int enemyNumber = 4;
+	int enemyNumber = 5;
 	vector<EnemyTank> enemies;
 	SDL_Texture* grasstexture = NULL;
 	SDL_Texture* walltexture = NULL;
 	SDL_Texture* woodtexture = NULL;
+	SDL_Texture* UIplayer = NULL;
+	AudioManager audio;
+	void renderText(const char* text, int x, int y) {
+		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
+		if (!textSurface) {
+			cerr << "Unable to render text surface! TTF_Error: " << TTF_GetError() << endl;
+			return;
+		}
+
+		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+		if (!textTexture) {
+			cerr << "Unable to create texture from text! SDL_Error: " << SDL_GetError() << endl;
+			SDL_FreeSurface(textSurface);
+			return;
+		}
+
+		SDL_Rect renderQuad = { x, y, textSurface->w, textSurface->h };
+		SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(textTexture);
+	}
 	string INT_TO_STRING(int num_pos) {
 		string num = "";
 		int x;
@@ -76,7 +112,7 @@ public:
 	void generatewall(int a, int b) {
 		string path;
 		if (tx.size() < b + 1) tx.resize(b + 1);
-		for (int i = a; i <= b; i++) {
+		for (int i = a; i <= b; i++) {	//load texture for a to b
 			path = "spritesheet/tile_";
 			string num = INT_TO_STRING(i);
 			path += num + ".PNG";
@@ -92,7 +128,7 @@ public:
 			return;
 		}
 		int start = a;
-		for (int i = 13; i <= 16; i++) {
+		for (int i = 13; i <= 16; i++) {	//bed
 			for (int j = 18; j <= 20; j++) {
 				if (start > b) break;
 				Wall wall(j * TITLE_SIZE, i * TITLE_SIZE);
@@ -106,7 +142,7 @@ public:
 				start++;
 			}
 		}
-		for (int j = 8; j <= 10; j++) {
+		for (int j = 8; j <= 10; j++) {		//sofa
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 16 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -118,7 +154,7 @@ public:
 			allWall.push_back(wall);
 			start++;
 		}
-		for (int i = 14;i <= 15;i++) {
+		for (int i = 14;i <= 15;i++) {		//door
 			if (start > b) break;
 			Wall wall(6 * TITLE_SIZE, i * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -129,7 +165,7 @@ public:
 			walls.push_back({ wall, tx[start] });
 			allWall.push_back(wall);
 		}
-		for (int i = 6;i <= 7;i++) {
+		for (int i = 6;i <= 7;i++) {		//door
 			if (start > b) break;
 			Wall wall(14 * TITLE_SIZE, i * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -141,7 +177,7 @@ public:
 			allWall.push_back(wall);
 		}
 		start++;
-		for (int i = 7;i <= 8;i++) {
+		for (int i = 7;i <= 8;i++) {		//door
 			if (start > b) break;
 			Wall wall(21 * TITLE_SIZE, i * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -153,7 +189,7 @@ public:
 			allWall.push_back(wall);
 		}
 		start++;
-		for (int i = 14;i <= 15;i++) {
+		for (int i = 14;i <= 15;i++) {		//door
 			if (start > b) break;
 			Wall wall(14 * TITLE_SIZE, i * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -165,7 +201,7 @@ public:
 			allWall.push_back(wall);
 		}
 		start++;
-		for (int j = 17;j <= 18;j++) {
+		for (int j = 17;j <= 18;j++) {		//door
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 11 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -177,7 +213,7 @@ public:
 			allWall.push_back(wall);
 		}
 		start++;
-		for (int j = 8;j <= 10;j++) {
+		for (int j = 8;j <= 10;j++) {		//kitchen
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 11 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -189,12 +225,12 @@ public:
 			allWall.push_back(wall);
 			start++;
 		}
-		Wall egg(9* TITLE_SIZE, 12 * TITLE_SIZE);
+		Wall egg(9* TITLE_SIZE, 12 * TITLE_SIZE);	//egg
 		egg.SetTexture(tx[start]);
 		walls.push_back({ egg, tx[start] });
 		allWall.push_back(egg);
 		start++;
-		for (int j = 9;j <= 11;j++) {
+		for (int j = 9;j <= 11;j++) {		//table kitchen
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 14 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -206,7 +242,7 @@ public:
 			allWall.push_back(wall);
 			start++;
 		}
-		for (int j = 9;j <= 10;j++) {
+		for (int j = 9;j <= 10;j++) {		//plate and knife
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 14 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -218,7 +254,7 @@ public:
 			allWall.push_back(wall);
 			start++;
 		}
-		for (int j = 9;j <= 11;j += 2) {
+		for (int j = 9;j <= 11;j += 2) {	//chair kitchen
 			if (start > b) break;
 			Wall wall(j * TITLE_SIZE, 13 * TITLE_SIZE);
 			if (start >= tx.size() || !tx[start]) {
@@ -228,6 +264,89 @@ public:
 			wall.SetTexture(tx[start]);
 			walls.push_back({ wall, tx[start] });
 			allWall.push_back(wall);
+		}
+		start++;
+		for (int i = 13;i >= 12; i--) {		//fish tank
+			if (start > b) break;
+			Wall wall(15 * TITLE_SIZE, i * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
+		}
+		for (int j = 15;j <=16 ; j++) {		//flower pot
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 10 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int j = 17;j <= 18;j++) {		//carpet
+			if (start > b) break;
+			Wall wall(j * TITLE_SIZE, 7 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+		}
+		start++;
+		for (int i = 9;i <= 10;i++) {		//broken stuff
+			for (int j = 19;j <= 20;j++) {
+				if (start > b) break;
+				Wall wall(j * TITLE_SIZE, i * TITLE_SIZE);
+				if (start >= tx.size() || !tx[start]) {
+					std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+					continue;
+				}
+				wall.SetTexture(tx[start]);
+				walls.push_back({ wall, tx[start] });
+				allWall.push_back(wall);
+				start++;
+			}
+		}
+		Wall wall(20* TITLE_SIZE, 6 * TITLE_SIZE);	//flower pot
+		wall.SetTexture(tx[start]);
+		walls.push_back({ wall, tx[start] });
+		allWall.push_back(wall);
+		start++;
+		for (int j = 16;j <= 18;j++) {		//sofa
+			Wall wall(j* TITLE_SIZE, 6 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
+		}
+		Wall rock(16 * TITLE_SIZE, 7 * TITLE_SIZE);	//rock
+		rock.SetTexture(tx[start]);
+		walls.push_back({ rock, tx[start] });
+		allWall.push_back(rock);
+		start++;
+		for (int j = 18;j <= 19;j++) {		//rock
+			Wall wall(j* TITLE_SIZE, 8 * TITLE_SIZE);
+			if (start >= tx.size() || !tx[start]) {
+				std::cerr << "Error: tx[" << a << "] is invalid" << std::endl;
+				continue;
+			}
+			wall.SetTexture(tx[start]);
+			walls.push_back({ wall, tx[start] });
+			allWall.push_back(wall);
+			start++;
 		}
 	}
 	void generatewood(int num_pos) {
@@ -305,6 +424,9 @@ public:
 	}
 	Game() {
 		running = true;
+		gameWon = false;
+		lives = 5;
+		gameStartTime = SDL_GetTicks();
 		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 			cerr << "SDL could not initalize! SDL_ERROR: " << SDL_GetError() << endl;
 			running = false;
@@ -319,6 +441,16 @@ public:
 			cerr << "Renderer could not be created! SDL_Error " << SDL_GetError() << endl;
 			running = false;
 		}
+		if (TTF_Init() == -1) {
+			cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError() << endl;
+			running = false;
+		}
+		font = TTF_OpenFont("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/open-sans.regular.ttf", 20);
+		if (!font) {
+			cerr << "Failed to load font! TTF_Error: " << TTF_GetError() << endl;
+			running = false;
+		}
+		UIplayer = loadTexture("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/spritesheet/blueman.png", renderer);
 		grasstexture = loadTexture("spritesheet/tile_01.png", renderer);
 		if (!grasstexture) {
 			cerr << "Failed to load grass texture Error: " << endl;
@@ -334,8 +466,14 @@ public:
 			initwalls(i);
 		}
 		generategrass();
-		generatewall(100, 130);
+		generatewall(100, 143);
 		spawnEnemies();
+		if (!audio.init()) {
+			running = false;
+		}
+		audio.loadMusic("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/music.mp3");
+		audio.loadSound("shoot", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/shoot-233473.wav");
+		audio.loadSound("endbullet", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/empty-gun-shot-6209.wav");
 	}
 	void render() {
 		SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); //set default backgroung: gray
@@ -359,16 +497,60 @@ public:
 		for (auto& enemy : enemies) {
 			enemy.render(renderer);
 		}
+
+		// show heart in UI
+		string livesText = "Lives: " + to_string(lives);
+		renderText(livesText.c_str(), 31*TITLE_SIZE, 5*TITLE_SIZE);
+
+		// show left time in UI
+		Uint32 currentTime = SDL_GetTicks();
+		int elapsedTime = (currentTime - gameStartTime) / 1000;	//ms to s
+		int remainingTime = TIME_LIMIT - elapsedTime;
+		if (remainingTime < 0) remainingTime = 0;
+		string timeText = "Time: " + to_string(remainingTime) + "s";
+		renderText(timeText.c_str(), 31 * TITLE_SIZE, 6 * TITLE_SIZE);
+
+		//	show bullet
+		UIbullet = "bullet: " + to_string(Pbullet);
+		renderText(UIbullet.c_str(), 31 * TITLE_SIZE, 2 * TITLE_SIZE);
+		if (Pbullet == 0) {
+			string time = "Loading " + to_string((currentTime - lastBulletTime) / 1000) + "s";
+			renderText(time.c_str(), 31 * TITLE_SIZE, 3 * TITLE_SIZE);
+		}
+
+		if (!running) {
+			if (gameWon) {
+				renderText("You Win!", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2);
+			}
+			else {
+				renderText("Game Over!", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2);
+			}
+		}
+
+		SDL_Rect rect = { 31 * TITLE_SIZE, 11 * TITLE_SIZE, 122, 135 };
+		SDL_RenderCopy(renderer, UIplayer, NULL, &rect);
+
 		SDL_RenderPresent(renderer);
 	}
 	void update() {
 		player.updateBullets();
+
+		Uint32 currentTime = SDL_GetTicks();
+		int elapsedTime = (currentTime - gameStartTime) / 1000;
+		int remainingTime = TIME_LIMIT - elapsedTime;
+
+		if (remainingTime <= 0 && !enemies.empty()) {
+			running = false;
+			return;
+		}
+
 		for (auto& enemy : enemies) {
 			enemy.move(allWall);
 			enemy.updateBullets();
-			/*if (rand() % 200 < 2) {
+			if (rand() % 200 < 2) {
 				enemy.shoot();
-			}*/
+				audio.playSound("shoot");
+			}
 
 		}
 		for (auto &enemy : enemies) {
@@ -438,14 +620,30 @@ public:
 				}
 			}
 		}
-		if (enemies.empty()) running = false; 
+		if (enemies.empty()) {
+			gameWon = true;
+			running = false;
+			return;
+		}
 		for (auto& enemy : enemies) {	//player collide with enemy.bullet => die
 			for (auto& bullet : enemy.bullets) {
 				if (SDL_HasIntersection(&bullet.bullet_rect, &player.tank_rect)) {
-					running = false;
-					return;
+					bullet.active = false;
+					lives--;
+					if (lives <= 0) {
+						running = false;
+						return;
+					}
 				}
 			}
+		}
+		Player_bullet_update(Pbullet);	//check bullet
+	}
+	void Player_bullet_update(int& Pbullet) {
+		Uint32 currentTime = SDL_GetTicks(); // Lấy thời gian hiện tại
+		if (Pbullet == 0 && currentTime - lastBulletTime >= 6000) { // time = 6s && endBullet => refill bullet
+			Pbullet = Max_bullet; 
+			lastBulletTime = currentTime; // update time refill
 		}
 	}
 	void handleEvents() {
@@ -460,12 +658,31 @@ public:
 					case SDLK_DOWN: player.move(0, 5, allWall); break;
 					case SDLK_LEFT: player.move(-5, 0, allWall); break;
 					case SDLK_RIGHT: player.move(5, 0, allWall); break;
-					case SDLK_SPACE: player.shoot(); break;
+					case SDLK_SPACE: 
+						if (Pbullet > 0) {
+							player.shoot();
+							audio.playSound("shoot");
+							Pbullet--;
+							lastBulletTime = SDL_GetTicks();
+						}
+						else {
+							audio.playSound("endbullet");
+						}
+						break;
+					case SDLK_m:
+						audio.pauseMusic();
+						audio.pauseSounds();
+						break;
+					case SDLK_r:
+						audio.resumeMusic();
+						audio.resumeSounds();
+						break;
 				}
 			}
 		}
 	}
 	void run() {
+		audio.playMusic();
 		while (running) {
 			handleEvents();
 			update();
@@ -474,6 +691,8 @@ public:
 		}
 	}          
 	~Game() {
+		audio.close();
+		SDL_DestroyTexture(UIplayer);
 		SDL_DestroyTexture(woodtexture);
 		SDL_DestroyTexture(walltexture);
 		SDL_DestroyTexture(grasstexture);
