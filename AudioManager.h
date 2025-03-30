@@ -94,7 +94,6 @@ public:
         Mix_Resume(-1);
     }
 
-    void pauseSounds() { Mix_Pause(-1); }
 
     void close() {
         if (music) {

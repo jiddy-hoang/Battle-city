@@ -22,6 +22,9 @@ const int HPlayer = 20;
 #include "bullet.h"
 #include "EnemyTank.h"
 #include "AudioManager.h"
+#include "SecrectBox.h"
+#include "Menu.h"
+
 SDL_Texture* loadTexture(const char*, SDL_Renderer*);
 
 int tileMap[19][34] = {
@@ -56,7 +59,8 @@ private:
 	int lives; // when player die -))
 	Uint32 gameStartTime; // time game start
 	Uint32 lastBulletTime = 0; 
-	const int TIME_LIMIT = 180; 
+	int TIME_LIMIT = 180; 
+	int remainingTime;
 	const int Max_bullet = 6;
 	int Pbullet = Max_bullet;
 	string UIbullet;
@@ -71,12 +75,14 @@ public:
 	vector<Wall> allWall;	//for all wall
 	playerTank player = playerTank(TITLE_SIZE, TITLE_SIZE);
 	int enemyNumber = 5;
+	int currentEnemy = 5;
 	vector<EnemyTank> enemies;
 	SDL_Texture* grasstexture = NULL;
 	SDL_Texture* walltexture = NULL;
 	SDL_Texture* woodtexture = NULL;
 	SDL_Texture* UIplayer = NULL;
 	AudioManager audio;
+	SecrectBox secrectBox = { 15 * TITLE_SIZE, TITLE_SIZE, SDL_GetTicks() };
 	void renderText(const char* text, int x, int y) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
 		if (!textSurface) {
@@ -504,11 +510,10 @@ public:
 
 		// show left time in UI
 		Uint32 currentTime = SDL_GetTicks();
-		int elapsedTime = (currentTime - gameStartTime) / 1000;	//ms to s
-		int remainingTime = TIME_LIMIT - elapsedTime;
-		if (remainingTime < 0) remainingTime = 0;
 		string timeText = "Time: " + to_string(remainingTime) + "s";
 		renderText(timeText.c_str(), 31 * TITLE_SIZE, 6 * TITLE_SIZE);
+
+		if (secrectBox.isActive()) secrectBox.render(renderer);
 
 		//	show bullet
 		UIbullet = "bullet: " + to_string(Pbullet);
@@ -537,7 +542,19 @@ public:
 
 		Uint32 currentTime = SDL_GetTicks();
 		int elapsedTime = (currentTime - gameStartTime) / 1000;
-		int remainingTime = TIME_LIMIT - elapsedTime;
+		remainingTime = TIME_LIMIT - elapsedTime;
+		if (remainingTime < 0) remainingTime = 0;
+
+		secrectBox.update(currentTime);
+		SDL_Rect secretBoxRect = secrectBox.getRect();
+		if (SDL_HasIntersection(&player.tank_rect, &secretBoxRect)) {
+			secrectBox.applyEffect(currentEnemy, lives, TIME_LIMIT);
+		}
+
+		if (currentEnemy > enemyNumber) {
+			enemies.push_back({ TITLE_SIZE, TITLE_SIZE });
+			enemyNumber = currentEnemy;
+		}
 
 		if (remainingTime <= 0 && !enemies.empty()) {
 			running = false;
@@ -671,7 +688,7 @@ public:
 						break;
 					case SDLK_m:
 						audio.pauseMusic();
-						audio.pauseSounds();
+						audio.stopAllSounds();
 						break;
 					case SDLK_r:
 						audio.resumeMusic();
@@ -696,16 +713,74 @@ public:
 		SDL_DestroyTexture(woodtexture);
 		SDL_DestroyTexture(walltexture);
 		SDL_DestroyTexture(grasstexture);
+		for (auto& tex : tx) {
+			if (tex) {
+				SDL_DestroyTexture(tex);
+			}
+		}
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
+		TTF_CloseFont(font);
+		TTF_Quit();
 		SDL_Quit();
 	}
 };
 int main(int argc, char* argv[]) {
 	srand(static_cast<unsigned int>(time(NULL)));
-	Game game;
-	if (game.running) {
-		game.run();
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		cerr << "SDL could not initialize! SDL_ERROR: " << SDL_GetError() << endl;
+		return 1;
 	}
+
+	if (TTF_Init() == -1) {
+		cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError() << endl;
+		SDL_Quit();
+		return 1;
+	}
+
+	SDL_Window* window = SDL_CreateWindow("Battlecity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (!window) {
+		cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
+		TTF_Quit();
+		SDL_Quit();
+		return 1;
+	}
+
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	if (!renderer) {
+		cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << endl;
+		SDL_DestroyWindow(window);
+		TTF_Quit();
+		SDL_Quit();
+		return 1;
+	}
+
+	TTF_Font* font = TTF_OpenFont("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/open-sans.regular.ttf", 20);
+	if (!font) {
+		cerr << "Failed to load font! TTF_Error: " << TTF_GetError() << endl;
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		TTF_Quit();
+		SDL_Quit();
+		return 1;
+	}
+
+	Menu menu(window, renderer, font);
+	menu.runMenu();
+
+	if (menu.getGameState() == GameState::GAME) {
+		Game game;
+		if (game.running) {
+			game.run();
+		}
+	}
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	TTF_CloseFont(font);
+	TTF_Quit();
+	SDL_Quit();
+
 	return 0;
 }
