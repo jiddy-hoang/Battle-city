@@ -137,10 +137,10 @@
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="EnemyTank.h" />
-    <ClInclude Include="Menu.h" />
     <ClInclude Include="playerTank.h" />
     <ClInclude Include="SecrectBox.h" />
     <ClInclude Include="wall.h" />
+    <ClInclude Include="Zombie.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

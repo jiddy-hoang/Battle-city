@@ -23,7 +23,7 @@ const int HPlayer = 20;
 #include "EnemyTank.h"
 #include "AudioManager.h"
 #include "SecrectBox.h"
-#include "Menu.h"
+#include "Zombie.h"
 
 SDL_Texture* loadTexture(const char*, SDL_Renderer*);
 
@@ -76,13 +76,18 @@ public:
 	playerTank player = playerTank(TITLE_SIZE, TITLE_SIZE);
 	int enemyNumber = 5;
 	int currentEnemy = 5;
+	int zombie = 3;
+	int currentZombie = 3;
 	vector<EnemyTank> enemies;
+	vector<Zombie> zombies;
 	SDL_Texture* grasstexture = NULL;
 	SDL_Texture* walltexture = NULL;
 	SDL_Texture* woodtexture = NULL;
 	SDL_Texture* UIplayer = NULL;
 	AudioManager audio;
+	int number = 4;
 	SecrectBox secrectBox = { 15 * TITLE_SIZE, TITLE_SIZE, SDL_GetTicks() };
+	Uint32 lastHitTime = 0;
 	void renderText(const char* text, int x, int y) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
 		if (!textSurface) {
@@ -407,6 +412,27 @@ public:
 			}
 		}
 	}
+	void spawnZombies() {
+		zombies.clear();
+		for (int i = 0; i < zombie; i++) {
+			int ex, ey;
+			bool validPos = false;
+			while (!validPos) {
+				ex = (rand() % 30) * TITLE_SIZE;
+				ey = (rand() % 19) * TITLE_SIZE;
+				if (ex < 40) ex = 40;
+				if (ey < 40) ey = 40;
+				validPos = true;
+				for (const auto& wall : allWall) {
+					if (wall.active && ex == wall.x && ey == wall.y) {
+						validPos = false;
+						break;
+					}
+				}
+			}
+			zombies.push_back({ ex, ey });
+		}
+	}
 	void spawnEnemies() {
 		enemies.clear();
 		for (int i = 0; i < enemyNumber; i++) {
@@ -474,12 +500,14 @@ public:
 		generategrass();
 		generatewall(100, 143);
 		spawnEnemies();
+		spawnZombies();
 		if (!audio.init()) {
 			running = false;
 		}
 		audio.loadMusic("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/music.mp3");
 		audio.loadSound("shoot", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/shoot-233473.wav");
 		audio.loadSound("endbullet", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/empty-gun-shot-6209.wav");
+		audio.loadSound("zombie", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/zombie.wav");
 	}
 	void render() {
 		SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); //set default backgroung: gray
@@ -502,6 +530,10 @@ public:
 		player.render(renderer);
 		for (auto& enemy : enemies) {
 			enemy.render(renderer);
+		}
+
+		for (auto& zombie : zombies) {
+			zombie.render(renderer);
 		}
 
 		// show heart in UI
@@ -548,12 +580,17 @@ public:
 		secrectBox.update(currentTime);
 		SDL_Rect secretBoxRect = secrectBox.getRect();
 		if (SDL_HasIntersection(&player.tank_rect, &secretBoxRect)) {
-			secrectBox.applyEffect(currentEnemy, lives, TIME_LIMIT);
+			secrectBox.applyEffect(currentEnemy, lives, TIME_LIMIT, currentZombie, number);
 		}
 
 		if (currentEnemy > enemyNumber) {
 			enemies.push_back({ TITLE_SIZE, TITLE_SIZE });
 			enemyNumber = currentEnemy;
+		}
+
+		if (currentZombie > zombie) {
+			zombies.push_back({ TITLE_SIZE, 17 * TITLE_SIZE });
+			zombie = currentZombie;
 		}
 
 		if (remainingTime <= 0 && !enemies.empty()) {
@@ -570,6 +607,14 @@ public:
 			}
 
 		}
+
+		for (auto& zombie : zombies) {
+			zombie.move(allWall);
+		}
+		if (rand() % 200 < 2) {
+			audio.playSound("zombie");
+		}
+
 		for (auto &enemy : enemies) {
 			for (auto& bullet : enemy.bullets) {
 				for (auto& wallPair : walls) {
@@ -582,7 +627,7 @@ public:
 						for (auto& allWall : allWall) {
 							if (allWall.x == x && allWall.y == y) {
 								allWall.active = false;
-								break;  // Thoát vòng lặp sau khi tìm thấy và cập nhật
+								break;  
 							}
 						}
 						break;
@@ -590,6 +635,7 @@ public:
 				}
 			}
 		}
+
 		for (auto& enemy : enemies) {
 			for (auto& bullet : enemy.bullets) {
 				for (auto& wallPair : initwall) {
@@ -601,6 +647,7 @@ public:
 				}
 			}
 		}
+
 		for (auto& bullet : player.bullets) {	//player.bullet collide with enemy => enemy die
 			for (auto& enemy : enemies) {
 				if (SDL_HasIntersection(&bullet.bullet_rect, &enemy.ETank_rect)) {
@@ -608,7 +655,35 @@ public:
 					enemy.active = false;
 				}
 			}
+			for (auto& zombie : zombies) {
+				if (SDL_HasIntersection(&bullet.bullet_rect, &zombie.zom_rect)) {
+					bullet.active = false;
+					zombie.active = false;
+				}
+			}
 		}
+
+		for (auto& zombie : zombies) {
+			if (SDL_HasIntersection(&zombie.zom_rect, &player.tank_rect)) {
+				Uint32 currentTime = SDL_GetTicks();
+				if (currentTime - lastHitTime >= 1000) {
+					lives--;
+					lastHitTime = currentTime;
+					if (lives <= 0) {
+						running = false;
+						return;
+					}
+				}
+			}
+			for (auto& enemy : enemies) {
+				if (SDL_HasIntersection(&zombie.zom_rect, &enemy.ETank_rect)) {
+					enemy.active = false;
+					break;
+				}
+			}
+		}
+
+		zombies.erase(std::remove_if(zombies.begin(), zombies.end(), [](Zombie& e) {return !e.active; }), zombies.end());	//delete !zombie.active
 		enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](EnemyTank& e) {return !e.active; }), enemies.end()); //delete !enemy.active
 		for (auto& bullet : player.bullets) {
 			for (auto& wallPair : walls) {
@@ -628,6 +703,7 @@ public:
 				}
 			}
 		}
+
 		for (auto& bullet : player.bullets) {
 			for (auto& wallPair : initwall) {
 				auto& wall = wallPair.first;
@@ -637,12 +713,14 @@ public:
 				}
 			}
 		}
-		if (enemies.empty()) {
+
+		if (enemies.empty()&&zombies.empty()) {
 			gameWon = true;
 			running = false;
 			return;
 		}
-		for (auto& enemy : enemies) {	//player collide with enemy.bullet => die
+
+		for (auto& enemy : enemies) {	//player collide with enemy.bullet => loss a heart
 			for (auto& bullet : enemy.bullets) {
 				if (SDL_HasIntersection(&bullet.bullet_rect, &player.tank_rect)) {
 					bullet.active = false;
@@ -657,7 +735,7 @@ public:
 		Player_bullet_update(Pbullet);	//check bullet
 	}
 	void Player_bullet_update(int& Pbullet) {
-		Uint32 currentTime = SDL_GetTicks(); // Lấy thời gian hiện tại
+		Uint32 currentTime = SDL_GetTicks(); //get real time
 		if (Pbullet == 0 && currentTime - lastBulletTime >= 6000) { // time = 6s && endBullet => refill bullet
 			Pbullet = Max_bullet; 
 			lastBulletTime = currentTime; // update time refill
@@ -727,60 +805,7 @@ public:
 };
 int main(int argc, char* argv[]) {
 	srand(static_cast<unsigned int>(time(NULL)));
-
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		cerr << "SDL could not initialize! SDL_ERROR: " << SDL_GetError() << endl;
-		return 1;
-	}
-
-	if (TTF_Init() == -1) {
-		cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError() << endl;
-		SDL_Quit();
-		return 1;
-	}
-
-	SDL_Window* window = SDL_CreateWindow("Battlecity", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (!window) {
-		cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
-		TTF_Quit();
-		SDL_Quit();
-		return 1;
-	}
-
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
-		cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << endl;
-		SDL_DestroyWindow(window);
-		TTF_Quit();
-		SDL_Quit();
-		return 1;
-	}
-
-	TTF_Font* font = TTF_OpenFont("C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/open-sans.regular.ttf", 20);
-	if (!font) {
-		cerr << "Failed to load font! TTF_Error: " << TTF_GetError() << endl;
-		SDL_DestroyRenderer(renderer);
-		SDL_DestroyWindow(window);
-		TTF_Quit();
-		SDL_Quit();
-		return 1;
-	}
-
-	Menu menu(window, renderer, font);
-	menu.runMenu();
-
-	if (menu.getGameState() == GameState::GAME) {
-		Game game;
-		if (game.running) {
-			game.run();
-		}
-	}
-
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	TTF_CloseFont(font);
-	TTF_Quit();
-	SDL_Quit();
-
+	Game game;
+	game.run();
 	return 0;
 }

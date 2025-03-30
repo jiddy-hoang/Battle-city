@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum ItemType { EXTRA_ENEMY, ADD_HEART, ADD_TIME, NOTHING };
+enum ItemType { EXTRA_ENEMY, ADD_HEART, ADD_TIME, NOTHING, EXTRA_ZOMBIE};
 SDL_Texture* loadTexture(const char*, SDL_Renderer*);
 
 class SecrectBox {
@@ -22,7 +22,7 @@ public:
     SecrectBox(int initX, int initY, Uint32 gameStartTime) {
         x = initX;
         y = initY;
-        boxRect = { x, y, TITLE_SIZE, TITLE_SIZE };
+        boxRect = { x, y, 2*TITLE_SIZE, 2*TITLE_SIZE };
         active = false;
         lastSpawnTime = gameStartTime;
         item = NOTHING; 
@@ -46,26 +46,34 @@ public:
         item = static_cast<ItemType>(rand() % 4); // random 1 of 4 items
     }
 
-    void applyEffect(int& Enemy , int& playerLives, int& remainingTime) {
+    void applyEffect(int& Enemy , int& playerLives, int& remainingTime, int& zombie, int& number) {
         if (!active) return;
         switch (item) {
         case EXTRA_ENEMY:
+            number = 1;
             Enemy++;
             break;
         case ADD_HEART:
+            number = 2;
             playerLives++;
             break;
         case ADD_TIME:
+            number = 3;
             remainingTime += 30;
             break;
         case NOTHING:
+            number = 4;
+            break;
+        case EXTRA_ZOMBIE:
+            number = 5;
+            zombie++;
             break;
         }
         active = false; // after using, box disappear
     }
 
     void render(SDL_Renderer* renderer) {
-        texture = loadTexture("spritesheet/tile_143.png", renderer);
+        texture = loadTexture("spritesheet/scrbox.png", renderer);
         SDL_RenderCopy(renderer, texture, NULL , &boxRect);
     }
 
