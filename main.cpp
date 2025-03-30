@@ -6,6 +6,8 @@
 #include <string>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include<chrono>
+#include<thread>
 
 using namespace std;
 
@@ -75,9 +77,9 @@ public:
 	vector<Wall> allWall;	//for all wall
 	playerTank player = playerTank(TITLE_SIZE, TITLE_SIZE);
 	int enemyNumber = 5;
-	int currentEnemy = 5;
+	int current_enemy = 5;
 	int zombie = 3;
-	int currentZombie = 3;
+	int current_zombie = 3;
 	vector<EnemyTank> enemies;
 	vector<Zombie> zombies;
 	SDL_Texture* grasstexture = NULL;
@@ -85,9 +87,10 @@ public:
 	SDL_Texture* woodtexture = NULL;
 	SDL_Texture* UIplayer = NULL;
 	AudioManager audio;
-	int number = 4;
+	int number;
 	SecrectBox secrectBox = { 15 * TITLE_SIZE, TITLE_SIZE, SDL_GetTicks() };
 	Uint32 lastHitTime = 0;
+	int lastGetItem = 0;
 	void renderText(const char* text, int x, int y) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
 		if (!textSurface) {
@@ -454,7 +457,18 @@ public:
 			enemies.push_back({ ex, ey });
 		}
 	}
-	Game() {
+	Game() {	//init in constructor
+		running = false;
+		window = nullptr;
+		renderer = nullptr;
+		font = nullptr;
+		gameStartTime = 0; 
+		gameWon = false; 
+		lives = 0; 
+		remainingTime = 0; 
+		number = 0;
+	}
+	void init() {
 		running = true;
 		gameWon = false;
 		lives = 5;
@@ -509,6 +523,7 @@ public:
 		audio.loadSound("endbullet", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/empty-gun-shot-6209.wav");
 		audio.loadSound("zombie", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/zombie.wav");
 	}
+
 	void render() {
 		SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); //set default backgroung: gray
 		SDL_RenderClear(renderer);	
@@ -545,7 +560,28 @@ public:
 		string timeText = "Time: " + to_string(remainingTime) + "s";
 		renderText(timeText.c_str(), 31 * TITLE_SIZE, 6 * TITLE_SIZE);
 
-		if (secrectBox.isActive()) secrectBox.render(renderer);
+		if (secrectBox.isActive()) {
+			secrectBox.render(renderer);
+		}
+		if (number != 7) {
+			string first_announcement = "You have...";
+			string announcement = "";
+			if (number == 1) {
+				announcement += "one more enemy";
+			}
+			else if (number == 3) {
+				announcement += "add 30s";
+			}
+			else if (number == 2) {
+				announcement += "one more heart";
+			}
+			else if (number == 4) {
+				announcement += "NOTHING :))";
+			}
+			else announcement += "one more zombie";
+			renderText(first_announcement.c_str(), 31 * TITLE_SIZE, 7 * TITLE_SIZE);
+			renderText(announcement.c_str(), 31 * TITLE_SIZE, 8 * TITLE_SIZE);
+		}
 
 		//	show bullet
 		UIbullet = "bullet: " + to_string(Pbullet);
@@ -577,20 +613,24 @@ public:
 		remainingTime = TIME_LIMIT - elapsedTime;
 		if (remainingTime < 0) remainingTime = 0;
 
+		if (currentTime - lastGetItem > 2000) {
+			number = 7;
+		}
 		secrectBox.update(currentTime);
 		SDL_Rect secretBoxRect = secrectBox.getRect();
 		if (SDL_HasIntersection(&player.tank_rect, &secretBoxRect)) {
-			secrectBox.applyEffect(currentEnemy, lives, TIME_LIMIT, currentZombie, number);
+			secrectBox.applyEffect(current_enemy, lives, TIME_LIMIT, current_zombie, number);
+			lastGetItem = currentTime;
 		}
 
-		if (currentEnemy > enemyNumber) {
+		if (current_enemy>enemyNumber) {
 			enemies.push_back({ TITLE_SIZE, TITLE_SIZE });
-			enemyNumber = currentEnemy;
+			enemyNumber = current_enemy;
 		}
 
-		if (currentZombie > zombie) {
+		if (current_zombie>zombie) {
 			zombies.push_back({ TITLE_SIZE, 17 * TITLE_SIZE });
-			zombie = currentZombie;
+			zombie = current_zombie;
 		}
 
 		if (remainingTime <= 0 && !enemies.empty()) {
@@ -611,31 +651,36 @@ public:
 		for (auto& zombie : zombies) {
 			zombie.move(allWall);
 		}
-		if (rand() % 200 < 2) {
+		if (rand() % 400 < 2) {
 			audio.playSound("zombie");
 		}
-
-		for (auto &enemy : enemies) {
+		for (auto& enemy : enemies) {	//wall and bullet of enemy gonna dissapear when they collide
 			for (auto& bullet : enemy.bullets) {
-				for (auto& wallPair : walls) {
+				for (auto it = walls.begin(); it != walls.end();) {
+					auto& wallPair = *it;
 					auto& wall = wallPair.first;
-					if (wall.active && SDL_HasIntersection(&wall.rect, &bullet.bullet_rect)) {	//bullet and wall gonna disappear when they collide
-						wall.active = false;
-						bullet.active = false;
+					if (wall.active && SDL_HasIntersection(&bullet.bullet_rect, &wall.rect)) {
 						int x = wall.x;
 						int y = wall.y;
-						for (auto& allWall : allWall) {
-							if (allWall.x == x && allWall.y == y) {
-								allWall.active = false;
-								break;  
+						wall.active = false;
+						bullet.active = false;
+						for (auto it2 = allWall.begin(); it2 != allWall.end();) { // Sửa ở đây
+							if (it2->x == x && it2->y == y) {
+								it2 = allWall.erase(it2); // Xóa khỏi allWall ngay lập tức
+								break;
+							}
+							else {
+								++it2;
 							}
 						}
-						break;
+						it = walls.erase(it);
+					}
+					else {
+						++it;
 					}
 				}
 			}
 		}
-
 		for (auto& enemy : enemies) {
 			for (auto& bullet : enemy.bullets) {
 				for (auto& wallPair : initwall) {
@@ -685,24 +730,32 @@ public:
 
 		zombies.erase(std::remove_if(zombies.begin(), zombies.end(), [](Zombie& e) {return !e.active; }), zombies.end());	//delete !zombie.active
 		enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](EnemyTank& e) {return !e.active; }), enemies.end()); //delete !enemy.active
-		for (auto& bullet : player.bullets) {
-			for (auto& wallPair : walls) {
+		for (auto& bullet : player.bullets) {	//wall and bullet of player gonna dissapear when they collide
+			for (auto it = walls.begin(); it != walls.end();) {
+				auto& wallPair = *it;
 				auto& wall = wallPair.first;
 				if (wall.active && SDL_HasIntersection(&bullet.bullet_rect, &wall.rect)) {
 					int x = wall.x;
 					int y = wall.y;
 					wall.active = false;
 					bullet.active = false;
-					for (auto& allWall : allWall) {
-						if (allWall.x == x && allWall.y == y) {
-							allWall.active = false;
-							break; 
+					for (auto it2 = allWall.begin(); it2 != allWall.end();) { 
+						if (it2->x == x && it2->y == y) {
+							it2 = allWall.erase(it2); 
+							break;
+						}
+						else {
+							++it2;
 						}
 					}
-					break;
+					it = walls.erase(it);
+				}
+				else {
+					++it;
 				}
 			}
 		}
+
 
 		for (auto& bullet : player.bullets) {
 			for (auto& wallPair : initwall) {
@@ -733,6 +786,9 @@ public:
 			}
 		}
 		Player_bullet_update(Pbullet);	//check bullet
+		walls.erase(std::remove_if(walls.begin(), walls.end(), [](const std::pair<Wall, SDL_Texture*>& wallPair) {return !wallPair.first.active;}), walls.end());
+
+		allWall.erase(std::remove_if(allWall.begin(), allWall.end(), [](const Wall& wall) {return !wall.active;}), allWall.end());
 	}
 	void Player_bullet_update(int& Pbullet) {
 		Uint32 currentTime = SDL_GetTicks(); //get real time
@@ -778,6 +834,7 @@ public:
 	}
 	void run() {
 		audio.playMusic();
+		init();
 		while (running) {
 			handleEvents();
 			update();
@@ -803,9 +860,100 @@ public:
 		SDL_Quit();
 	}
 };
+
+class Menu {
+private:
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+	SDL_Texture* background;
+	SDL_Texture* playButton;
+	SDL_Texture* exitButton;
+	SDL_Rect playRect;
+	SDL_Rect exitRect;
+	bool running;
+public:
+	// Constructor
+	Menu(int width, int height) {
+		SDL_Init(SDL_INIT_VIDEO);
+		IMG_Init(IMG_INIT_PNG);
+
+		window = SDL_CreateWindow("Game Menu", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+		background = loadTexture("menuGame/menu.png", renderer);
+		playButton = loadTexture("menuGame/play.png", renderer);
+		exitButton = loadTexture("menuGame/exit.png", renderer);
+
+		playRect = { 300, 200, 140, 140 };  // Nút Play
+		exitRect = { 300, 320, 130, 130 };  // Nút Exit
+		running = true;
+	}
+
+	void handleEvent(SDL_Event& event, Game& game) {
+		if (event.type == SDL_QUIT) {
+			running = false;
+		}
+
+		if (event.type == SDL_MOUSEBUTTONDOWN) {
+			int x = event.button.x;
+			int y = event.button.y;
+
+			if (x >= playRect.x && x <= playRect.x + playRect.w &&
+				y >= playRect.y && y <= playRect.y + playRect.h) {
+				cout << "Play button clicked! Starting game...\n";
+				running = false;  // off menu to start game
+
+				SDL_DestroyRenderer(renderer);
+				SDL_DestroyWindow(window);
+				renderer = nullptr;
+				window = nullptr;
+
+				game.init();
+				game.run();
+			}
+
+			if (x >= exitRect.x && x <= exitRect.x + exitRect.w &&
+				y >= exitRect.y && y <= exitRect.y + exitRect.h) {
+				cout << "Exit button clicked! Exiting game...\n";
+				running = false;
+			}
+		}
+	}
+
+	// Render menu
+	void render() {
+		SDL_RenderClear(renderer);
+		if (background) SDL_RenderCopy(renderer, background, NULL, NULL);
+		if (playButton) SDL_RenderCopy(renderer, playButton, NULL, &playRect);
+		if (exitButton) SDL_RenderCopy(renderer, exitButton, NULL, &exitRect);
+		SDL_RenderPresent(renderer);
+	}
+
+	// Destructor
+	~Menu() {
+		SDL_DestroyTexture(background);
+		SDL_DestroyTexture(playButton);
+		SDL_DestroyTexture(exitButton);
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		IMG_Quit();
+		SDL_Quit();
+	}
+
+	void run(Game& game) {
+		while (running) {
+			SDL_Event event;
+			while (SDL_PollEvent(&event)) {
+				handleEvent(event, game);
+			}
+			render();
+		}
+	}
+};
 int main(int argc, char* argv[]) {
 	srand(static_cast<unsigned int>(time(NULL)));
+	Menu menu(800, 450);
 	Game game;
-	game.run();
+	menu.run(game);
 	return 0;
 }

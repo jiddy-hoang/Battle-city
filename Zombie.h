@@ -34,18 +34,18 @@ public:
 			int r = rand() % 4;
 			if (r == 0) {	//up
 				dirX = 0;
-				dirY = -3;
+				dirY = -5;
 			}
 			else if (r == 1) {	//down
 				dirX = 0;
-				dirY = 3;
+				dirY = 5;
 			}
 			else if (r == 2) {	//left
-				dirX = -3;
+				dirX = -5;
 				dirY = 0;
 			}
 			else {
-				dirX = 3;	//right
+				dirX = 5;	//right
 				dirY = 0;
 			}
 		}

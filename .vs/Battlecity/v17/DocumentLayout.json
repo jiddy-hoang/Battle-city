@@ -7,16 +7,16 @@
       "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\SecrectBox.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:SecrectBox.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\EnemyTank.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:EnemyTank.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\Zombie.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:Zombie.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\EnemyTank.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:EnemyTank.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\SecrectBox.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|solutionrelative:SecrectBox.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9218D592-030F-4835-91CE-84F473547318}|Battlecity.vcxproj|C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\playerTank.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -46,13 +46,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "SecrectBox.h",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\SecrectBox.h",
               "RelativeDocumentMoniker": "SecrectBox.h",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\SecrectBox.h",
               "RelativeToolTip": "SecrectBox.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEAAAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAEAAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-29T09:40:19.48Z",
               "EditorCaption": ""
@@ -65,7 +65,7 @@
               "RelativeDocumentMoniker": "main.cpp",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAAEYAAAAAAAAAAAAlwFQAAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAAIcCAAAAAAAAAAAswJsCAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-03-24T05:50:24.627Z",
               "EditorCaption": ""
@@ -78,20 +78,20 @@
               "RelativeDocumentMoniker": "Zombie.h",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\Zombie.h",
               "RelativeToolTip": "Zombie.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEIAAAA8AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-30T09:04:24.227Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "EnemyTank.h",
               "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\EnemyTank.h",
               "RelativeDocumentMoniker": "EnemyTank.h",
               "ToolTip": "C:\\Users\\Admin\\Desktop\\Jiddy\\GameSDL\\LTNC-prj\\Battlecity\\EnemyTank.h",
               "RelativeToolTip": "EnemyTank.h",
-              "ViewState": "AgIAADsAAAAAAAAAAAAQwEsAAAAsAAAAAAAAAA==",
+              "ViewState": "AgIAADIAAAAAAAAAAAAQwFIAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-30T09:04:49.715Z",
               "EditorCaption": ""
