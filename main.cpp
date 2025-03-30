@@ -6,8 +6,7 @@
 #include <string>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include<chrono>
-#include<thread>
+#include <fstream>
 
 using namespace std;
 
@@ -67,6 +66,9 @@ private:
 	int Pbullet = Max_bullet;
 	string UIbullet;
 	bool gameWon; 
+	SDL_Rect savegame_button = { 31 * TITLE_SIZE, 16 * TITLE_SIZE, 110, 31 };
+	SDL_Rect exitgame_button = { 31 * TITLE_SIZE, 17 * TITLE_SIZE, 110, 31 };
+	SDL_Rect music_button = { 31 * TITLE_SIZE, 18 * TITLE_SIZE, 47, 31 };
 public:
 	bool running;
 	vector<pair<Wall,SDL_Texture*>> walls;
@@ -86,11 +88,69 @@ public:
 	SDL_Texture* walltexture = NULL;
 	SDL_Texture* woodtexture = NULL;
 	SDL_Texture* UIplayer = NULL;
+	SDL_Texture* savebutton = NULL;
+	SDL_Texture* exitbutton = NULL;
+	SDL_Texture* musicbutton = NULL;
 	AudioManager audio;
 	int number;
 	SecrectBox secrectBox = { 15 * TITLE_SIZE, TITLE_SIZE, SDL_GetTicks() };
 	Uint32 lastHitTime = 0;
 	int lastGetItem = 0;
+	bool turn_on = true;
+	void saveGame(const string& filename) {
+		ofstream file(filename);
+		if (!file) {
+			cerr << "cant open file to save!" << endl;
+			return;
+		}
+
+		file << lives << " " << TIME_LIMIT << " " << remainingTime << endl;
+		file << player.x << " " << player.y << endl;
+		file << enemies.size() << endl;
+
+		for (const auto& enemy : enemies) {
+			file << enemy.x << " " << enemy.y << endl;
+		}
+
+		file << zombies.size() << endl;
+		for (const auto& zombie : zombies) {
+			file << zombie.x << " " << zombie.y << endl;
+		}
+
+		file.close();
+		cout << "Save!" << endl;
+	}
+	void loadGame(const string& filename) {
+		ifstream file(filename);
+		if (!file) {
+			cerr << "cant open file to load!" << endl;
+			return;
+		}
+
+		file >> lives >> TIME_LIMIT >> remainingTime;
+		file >> player.x >> player.y;
+
+		int enemyCount;
+		file >> enemyCount;
+		enemies.clear();
+		for (int i = 0; i < enemyCount; i++) {
+			int x, y;
+			file >> x >> y;
+			enemies.push_back({ x, y });
+		}
+
+		int zombieCount;
+		file >> zombieCount;
+		zombies.clear();
+		for (int i = 0; i < zombieCount; i++) {
+			int x, y;
+			file >> x >> y;
+			zombies.push_back({ x, y });
+		}
+
+		file.close();
+		cout << "Load!" << endl;
+	}
 	void renderText(const char* text, int x, int y) {
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
 		if (!textSurface) {
@@ -522,6 +582,9 @@ public:
 		audio.loadSound("shoot", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/shoot-233473.wav");
 		audio.loadSound("endbullet", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/empty-gun-shot-6209.wav");
 		audio.loadSound("zombie", "C:/Users/Admin/Desktop/Jiddy/GameSDL/LTNC-prj/Battlecity/music-sound/zombie.wav");
+		savebutton = loadTexture("menuGame/save.png", renderer);
+		exitbutton = loadTexture("menuGame/exit.png", renderer);
+		musicbutton = loadTexture("menuGame/music.png", renderer);
 	}
 
 	void render() {
@@ -560,6 +623,7 @@ public:
 		string timeText = "Time: " + to_string(remainingTime) + "s";
 		renderText(timeText.c_str(), 31 * TITLE_SIZE, 6 * TITLE_SIZE);
 
+		//secrect box
 		if (secrectBox.isActive()) {
 			secrectBox.render(renderer);
 		}
@@ -567,21 +631,30 @@ public:
 			string first_announcement = "You have...";
 			string announcement = "";
 			if (number == 1) {
-				announcement += "one more enemy";
+				announcement += "enemy";
 			}
 			else if (number == 3) {
 				announcement += "add 30s";
 			}
 			else if (number == 2) {
-				announcement += "one more heart";
+				announcement += "heart";
 			}
 			else if (number == 4) {
 				announcement += "NOTHING :))";
 			}
-			else announcement += "one more zombie";
+			else announcement += "zombie";
 			renderText(first_announcement.c_str(), 31 * TITLE_SIZE, 7 * TITLE_SIZE);
 			renderText(announcement.c_str(), 31 * TITLE_SIZE, 8 * TITLE_SIZE);
 		}
+
+		//show UI
+		string music = "";
+		if (turn_on) music += "ON";
+		else music += "OFF";
+		renderText(music.c_str(), 32 * TITLE_SIZE, 18 * TITLE_SIZE);
+		SDL_RenderCopy(renderer, savebutton, NULL, &savegame_button);
+		SDL_RenderCopy(renderer, exitbutton, NULL, &exitgame_button);
+		SDL_RenderCopy(renderer, musicbutton, NULL, &music_button);
 
 		//	show bullet
 		UIbullet = "bullet: " + to_string(Pbullet);
@@ -820,14 +893,43 @@ public:
 							audio.playSound("endbullet");
 						}
 						break;
-					case SDLK_m:
-						audio.pauseMusic();
-						audio.stopAllSounds();
-						break;
-					case SDLK_r:
+				}
+			}
+			else if (event.type == SDL_MOUSEBUTTONDOWN) {
+				int x = event.button.x;
+				int y = event.button.y;
+
+				if (x >= exitgame_button.x && x <= exitgame_button.x + exitgame_button.w &&
+					y >= exitgame_button.y && y <= exitgame_button.y + exitgame_button.h) {
+					cout << "New Game selected!" << endl;
+					running = false;
+				}
+
+				if (x >= savegame_button.x && x <= savegame_button.x + savegame_button.w &&
+					y >= savegame_button.y && y <= savegame_button.y + savegame_button.h) {
+					cout << "Load Game selected!" << endl;
+					running = false;
+					SDL_DestroyRenderer(renderer);
+					SDL_DestroyWindow(window);
+					renderer = nullptr;
+					window = nullptr;
+
+					loadGame("savefile.txt");	//save and quit
+					running = false;
+				}
+
+				if (x >= music_button.x && x <= music_button.x + music_button.w &&
+					y >= music_button.y && y <= music_button.y + music_button.h) {
+					if (turn_on == false) {
+						turn_on = true;
 						audio.resumeMusic();
 						audio.resumeSounds();
-						break;
+					}
+					else {
+						turn_on = false;
+						audio.pauseMusic();
+						audio.stopAllSounds();
+					}
 				}
 			}
 		}
@@ -860,19 +962,19 @@ public:
 		SDL_Quit();
 	}
 };
-
 class Menu {
 private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Texture* background;
-	SDL_Texture* playButton;
+	SDL_Texture* newGameButton;
+	SDL_Texture* loadGameButton;
 	SDL_Texture* exitButton;
-	SDL_Rect playRect;
+	SDL_Rect newGameRect;
+	SDL_Rect loadGameRect;
 	SDL_Rect exitRect;
 	bool running;
 public:
-	// Constructor
 	Menu(int width, int height) {
 		SDL_Init(SDL_INIT_VIDEO);
 		IMG_Init(IMG_INIT_PNG);
@@ -881,11 +983,13 @@ public:
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 		background = loadTexture("menuGame/menu.png", renderer);
-		playButton = loadTexture("menuGame/play.png", renderer);
-		exitButton = loadTexture("menuGame/exit.png", renderer);
+		newGameButton = loadTexture("menuGame/newgame.png", renderer);
+		loadGameButton = loadTexture("menuGame/loadgame.png", renderer);
+		exitButton = loadTexture("menuGame/exitgame.png", renderer);
 
-		playRect = { 300, 200, 140, 140 };  // Nút Play
-		exitRect = { 300, 320, 130, 130 };  // Nút Exit
+		newGameRect = { 300, 120, 140, 41 };
+		loadGameRect = { 300, 150, 140, 50 };
+		exitRect = { 300, 200, 140, 44 };
 		running = true;
 	}
 
@@ -898,11 +1002,10 @@ public:
 			int x = event.button.x;
 			int y = event.button.y;
 
-			if (x >= playRect.x && x <= playRect.x + playRect.w &&
-				y >= playRect.y && y <= playRect.y + playRect.h) {
-				cout << "Play button clicked! Starting game...\n";
-				running = false;  // off menu to start game
-
+			if (x >= newGameRect.x && x <= newGameRect.x + newGameRect.w &&
+				y >= newGameRect.y && y <= newGameRect.y + newGameRect.h) {
+				cout << "New Game selected!" << endl;
+				running = false;
 				SDL_DestroyRenderer(renderer);
 				SDL_DestroyWindow(window);
 				renderer = nullptr;
@@ -912,27 +1015,40 @@ public:
 				game.run();
 			}
 
+			if (x >= loadGameRect.x && x <= loadGameRect.x + loadGameRect.w &&
+				y >= loadGameRect.y && y <= loadGameRect.y + loadGameRect.h) {
+				cout << "Load Game selected!" << endl;
+				running = false;
+				SDL_DestroyRenderer(renderer);
+				SDL_DestroyWindow(window);
+				renderer = nullptr;
+				window = nullptr;
+
+				game.loadGame("savefile.txt");
+				game.run();
+			}
+
 			if (x >= exitRect.x && x <= exitRect.x + exitRect.w &&
 				y >= exitRect.y && y <= exitRect.y + exitRect.h) {
-				cout << "Exit button clicked! Exiting game...\n";
+				cout << "Exit selected!" << endl;
 				running = false;
 			}
 		}
 	}
 
-	// Render menu
 	void render() {
 		SDL_RenderClear(renderer);
 		if (background) SDL_RenderCopy(renderer, background, NULL, NULL);
-		if (playButton) SDL_RenderCopy(renderer, playButton, NULL, &playRect);
+		if (newGameButton) SDL_RenderCopy(renderer, newGameButton, NULL, &newGameRect);
+		if (loadGameButton) SDL_RenderCopy(renderer, loadGameButton, NULL, &loadGameRect);
 		if (exitButton) SDL_RenderCopy(renderer, exitButton, NULL, &exitRect);
 		SDL_RenderPresent(renderer);
 	}
 
-	// Destructor
 	~Menu() {
 		SDL_DestroyTexture(background);
-		SDL_DestroyTexture(playButton);
+		SDL_DestroyTexture(newGameButton);
+		SDL_DestroyTexture(loadGameButton);
 		SDL_DestroyTexture(exitButton);
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
