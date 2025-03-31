@@ -60,7 +60,7 @@ private:
 	int lives; // when player die -))
 	Uint32 gameStartTime; // time game start
 	Uint32 lastBulletTime = 0; 
-	int TIME_LIMIT = 180; 
+	int TIME_LIMIT = 120; 
 	int remainingTime;
 	const int Max_bullet = 6;
 	int Pbullet = Max_bullet;
@@ -97,7 +97,7 @@ public:
 	Uint32 lastHitTime = 0;
 	int lastGetItem = 0;
 	bool turn_on = true;
-	void saveGame(const string& filename) {
+	void saveGame(const string& filename) {	//save game
 		ofstream file(filename);
 		if (!file) {
 			cerr << "cant open file to save!" << endl;
@@ -120,7 +120,7 @@ public:
 		file.close();
 		cout << "Save!" << endl;
 	}
-	void loadGame(const string& filename) {
+	void loadGame(const string& filename) {	//load game to continue the last game have save
 		ifstream file(filename);
 		if (!file) {
 			cerr << "cant open file to load!" << endl;
@@ -151,7 +151,7 @@ public:
 		file.close();
 		cout << "Load!" << endl;
 	}
-	void renderText(const char* text, int x, int y) {
+	void renderText(const char* text, int x, int y) {	
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, textColor);
 		if (!textSurface) {
 			cerr << "Unable to render text surface! TTF_Error: " << TTF_GetError() << endl;
@@ -171,7 +171,7 @@ public:
 		SDL_FreeSurface(textSurface);
 		SDL_DestroyTexture(textTexture);
 	}
-	string INT_TO_STRING(int num_pos) {
+	string INT_TO_STRING(int num_pos) {	//change int to string to support load texture
 		string num = "";
 		int x;
 		char c;
@@ -840,7 +840,7 @@ public:
 			}
 		}
 
-		if (enemies.empty()&&zombies.empty()) {
+		if (enemies.empty()&&zombies.empty()) {	//kill all zombie and enemy => win
 			gameWon = true;
 			running = false;
 			return;
@@ -859,9 +859,9 @@ public:
 			}
 		}
 		Player_bullet_update(Pbullet);	//check bullet
-		walls.erase(std::remove_if(walls.begin(), walls.end(), [](const std::pair<Wall, SDL_Texture*>& wallPair) {return !wallPair.first.active;}), walls.end());
+		walls.erase(std::remove_if(walls.begin(), walls.end(), [](const std::pair<Wall, SDL_Texture*>& wallPair) {return !wallPair.first.active;}), walls.end());	//delete !wall.active
 
-		allWall.erase(std::remove_if(allWall.begin(), allWall.end(), [](const Wall& wall) {return !wall.active;}), allWall.end());
+		allWall.erase(std::remove_if(allWall.begin(), allWall.end(), [](const Wall& wall) {return !wall.active;}), allWall.end());	//delete !allwall.active
 	}
 	void Player_bullet_update(int& Pbullet) {
 		Uint32 currentTime = SDL_GetTicks(); //get real time
@@ -876,7 +876,7 @@ public:
 			if (event.type == SDL_QUIT) {
 				running = false;
 			}
-			else if (event.type == SDL_KEYDOWN) {
+			else if (event.type == SDL_KEYDOWN) {	//move and shoot
 				switch (event.key.keysym.sym) {
 					case SDLK_UP: player.move(0, -5, allWall); break;
 					case SDLK_DOWN: player.move(0, 5, allWall); break;
@@ -899,7 +899,7 @@ public:
 				int x = event.button.x;
 				int y = event.button.y;
 
-				if (x >= exitgame_button.x && x <= exitgame_button.x + exitgame_button.w &&
+				if (x >= exitgame_button.x && x <= exitgame_button.x + exitgame_button.w &&	//quit game
 					y >= exitgame_button.y && y <= exitgame_button.y + exitgame_button.h) {
 					cout << "New Game selected!" << endl;
 					running = false;
@@ -918,7 +918,7 @@ public:
 					running = false;
 				}
 
-				if (x >= music_button.x && x <= music_button.x + music_button.w &&
+				if (x >= music_button.x && x <= music_button.x + music_button.w &&	//on off music
 					y >= music_button.y && y <= music_button.y + music_button.h) {
 					if (turn_on == false) {
 						turn_on = true;

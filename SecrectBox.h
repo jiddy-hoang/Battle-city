@@ -59,7 +59,7 @@ public:
             break;
         case ADD_TIME:
             number = 3;
-            remainingTime += 30;
+            remainingTime += 20;
             break;
         case NOTHING:
             number = 4;
